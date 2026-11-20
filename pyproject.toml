@@ -1,6 +1,6 @@
 [project]
 name = "keycloak-client-profiles-lab"
-version = "0.9.0"
+version = "1.0.0"
 description = "OAuth 2.1 and FAPI 2.0 checks against Keycloak's client profiles, with an evidence trail"
 readme = "README.md"
 license = {text = "MIT"}

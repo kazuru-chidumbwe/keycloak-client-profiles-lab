@@ -113,6 +113,7 @@ way). Exit status 3 means Keycloak could not be reached, which is never reported
 | `policies.json` | The client policy set that works in a realm with both confidential and public clients |
 | `kclab/` | Evidence recorder, fixtures, the checks, verdict rules |
 | `tests/` | Tests that need no Keycloak (redaction, verdict rules, schema) |
+| `CHANGELOG.md` | What changed in each release |
 
 ## Testing another Keycloak version
 
