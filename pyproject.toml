@@ -1,0 +1,21 @@
+[project]
+name = "keycloak-client-profiles-lab"
+version = "0.9.0"
+description = "OAuth 2.1 and FAPI 2.0 checks against Keycloak's client profiles, with an evidence trail"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.12"
+dependencies = ["requests>=2.31", "jwcrypto>=1.5", "PyYAML>=6.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "jsonschema>=4.21", "ruff>=0.6"]
+
+[tool.setuptools]
+packages = ["kclab"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

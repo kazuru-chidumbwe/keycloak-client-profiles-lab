@@ -1,0 +1,141 @@
+# Requirements matrix. Each requirement names its source, the role it binds, and the tests that check it.
+# A test id is <check>.<name>; "control" tests are positive controls: they must succeed for the negative tests of the
+# same check to count (otherwise those are INCONCLUSIVE).
+# section_verified: false until the section number has been checked against the published text
+# (RFC 9700, January 2025; FAPI 2.0 Security Profile Final, 22 February 2025; checked 20 Nov 2026).
+# FAPI 2.0 covers confidential clients only (section 5.1.1), so its rows apply to the FAPI realm client F.
+
+- id: P1
+  title: Password grant refused
+  level: MUST
+  role: authorization_server
+  sources:
+    - {standard: RFC 9700, section: "2.4", section_verified: true}
+    - {standard: OAuth 2.1 draft, section: "10.1", section_verified: false}
+  clients: [F, R-pub, R-conf]
+  tests:
+    - {id: P1.password_grant, kind: negative, expect: {status: ">=400"}}
+
+- id: P2
+  title: PKCE with S256 required
+  level: MUST
+  role: authorization_server
+  sources:
+    - {standard: RFC 9700, section: "2.1.1", section_verified: true}
+    - {standard: FAPI 2.0 Security Profile, section: "5.3.2.2 item 5", section_verified: true}
+  clients: [F, R-pub, R-conf]
+  tests:
+    - {id: P2.s256.control, kind: control, expect: {code_issued: true}}
+    - {id: P2.missing_challenge, kind: negative, expect: {code_issued: false}}
+    - {id: P2.plain_method, kind: negative, expect: {code_issued: false}}
+
+- id: P3
+  title: PKCE downgrade refused
+  level: MUST
+  role: authorization_server
+  sources:
+    - {standard: RFC 9700, section: "2.1.1", section_verified: true}
+    - {standard: RFC 9700, section: "4.8", section_verified: false}
+  clients: [F, R-pub, R-conf]
+  tests:
+    - {id: P3.verifier_without_challenge, kind: negative, expect: {status: ">=400"},
+       note: "PASS without a token request when a challenge-less authorization request is already refused"}
+
+- id: P4
+  title: Pushed authorization request required
+  level: MUST
+  role: authorization_server
+  sources:
+    - {standard: FAPI 2.0 Security Profile, section: "5.3.2.2 item 3", section_verified: true}
+  clients: [F]
+  tests:
+    - {id: P4.par.control, kind: control, expect: {code_issued: true}}
+    - {id: P4.direct_request, kind: negative, expect: {code_issued: false}}
+
+- id: P5
+  title: Exact redirect URI match
+  level: MUST
+  role: authorization_server
+  sources:
+    - {standard: RFC 9700, section: "2.1", section_verified: true}
+    - {standard: OAuth 2.1 draft, section: "2.3.1", section_verified: false}
+  clients: [F, R-pub, R-conf]
+  tests:
+    - {id: P5.exact.control, kind: control, expect: {code_issued: true}}
+    - {id: P5.extra_path, kind: negative, expect: {code_issued: false}}
+    - {id: P5.extra_query, kind: negative, expect: {code_issued: false}}
+    - {id: P5.other_port, kind: negative, expect: {code_issued: false}}
+
+- id: P6
+  title: Authorization code used once
+  level: MUST
+  role: authorization_server
+  sources:
+    - {standard: OAuth 2.1 draft, section: "4.1.3", section_verified: false}
+    - {standard: RFC 6749, section: "4.1.2", section_verified: false}
+  clients: [F, R-pub, R-conf]
+  tests:
+    - {id: P6.code.control, kind: control, expect: {status: 200}}
+    - {id: P6.code_replay, kind: negative, expect: {status: ">=400"}}
+
+- id: P6r
+  title: Tokens from a replayed code revoked
+  level: SHOULD
+  role: authorization_server
+  sources:
+    - {standard: RFC 6749, section: "4.1.2", section_verified: false}
+  clients: [F, R-pub, R-conf]
+  tests:
+    - {id: P6.tokens_revoked_after_replay, kind: negative, expect: {status: ">=400"}}
+
+- id: P7
+  title: Authorization code lifetime 60 seconds or less
+  level: MUST
+  role: authorization_server
+  sources:
+    - {standard: FAPI 2.0 Security Profile, section: "5.3.2.1 item 11", section_verified: true}
+  clients: [F]
+  tests:
+    - {id: P7.code_after_65s, kind: negative, expect: {status: ">=400"}}
+
+- id: P8
+  title: Client assertion audience is the issuer, as a string
+  level: MUST
+  role: authorization_server
+  sources:
+    - {standard: FAPI 2.0 Security Profile, section: "5.3.2.1 item 8", section_verified: true}
+  clients: [F]
+  applies_when: client authenticates with private_key_jwt
+  tests:
+    - {id: P8.aud_issuer_string.control, kind: control, expect: {status: 200}}
+    - {id: P8.aud_issuer_array, kind: negative, expect: {status: ">=400"}}
+    - {id: P8.aud_token_endpoint, kind: negative, expect: {status: ">=400"}}
+
+- id: P9
+  title: Public client refresh token sender-constrained or rotated
+  level: MUST
+  role: authorization_server
+  sources:
+    - {standard: RFC 9700, section: "2.2.2", section_verified: true}
+  clients: [R-pub]
+  pass_rule: any_of            # rotation with replay rejection, or binding (both DPoP tests)
+  groups:
+    - [P9.rotation.old_token_replay]
+    - [P9.dpop.wrong_key, P9.dpop.missing_proof]
+  tests:
+    - {id: P9.refresh.control, kind: control, expect: {status: 200}}
+    - {id: P9.rotation.old_token_replay, kind: negative, expect: {status: ">=400"},
+       note: "own token family: refresh once, then replay the old refresh token"}
+    - {id: P9.dpop.wrong_key, kind: negative, expect: {status: ">=400"}, note: "own token family"}
+    - {id: P9.dpop.missing_proof, kind: negative, expect: {status: ">=400"}, note: "own token family"}
+
+- id: P10
+  title: Issuer identifier in the authorization response
+  level: MUST
+  role: authorization_server
+  sources:
+    - {standard: RFC 9207, section: "2", section_verified: false}
+    - {standard: FAPI 2.0 Security Profile, section: "5.3.2.2 item 7", section_verified: true}
+  clients: [F, R-pub, R-conf]
+  tests:
+    - {id: P10.iss_in_response, kind: positive, expect: {iss: issuer}}

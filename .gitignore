@@ -8,3 +8,7 @@ admin-password
 image-digest.txt
 pki/
 runs/
+admin-credentials
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
