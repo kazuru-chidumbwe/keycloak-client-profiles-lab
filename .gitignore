@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local lab state and credentials
+admin-password
+image-digest.txt
+pki/
+runs/

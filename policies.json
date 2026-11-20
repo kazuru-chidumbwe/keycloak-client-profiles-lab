@@ -1,0 +1,38 @@
+{
+  "policies": [
+    {
+      "name": "oauth21-confidential",
+      "enabled": true,
+      "conditions": [
+        {
+          "condition": "client-access-type",
+          "configuration": {
+            "type": [
+              "confidential"
+            ]
+          }
+        }
+      ],
+      "profiles": [
+        "oauth-2-1-for-confidential-client"
+      ]
+    },
+    {
+      "name": "oauth21-public",
+      "enabled": true,
+      "conditions": [
+        {
+          "condition": "client-access-type",
+          "configuration": {
+            "type": [
+              "public"
+            ]
+          }
+        }
+      ],
+      "profiles": [
+        "oauth-2-1-for-public-client"
+      ]
+    }
+  ]
+}
