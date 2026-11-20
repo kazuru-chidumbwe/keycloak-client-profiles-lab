@@ -2,7 +2,7 @@
 
 OAuth 2.1 and FAPI 2.0 checks against Keycloak's client profiles, with an evidence trail for every verdict.
 
-Lab kit for the post **"Keycloak client profiles: one policy condition breaks public clients"**.
+Lab kit for the post [**Keycloak client profiles: one policy condition breaks public clients**](https://kazuru.hashnode.dev/keycloak-client-profiles-one-policy-condition-breaks-public-clients).
 
 It starts a throwaway Keycloak 26.8.2 on `127.0.0.1`, builds two realms, and runs ten checks taken from RFC 9700,
 the OAuth 2.1 draft and the FAPI 2.0 Security Profile in three states: the console defaults, Keycloak's own guidance
